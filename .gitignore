@@ -1,9 +1,9 @@
 .idea
 __pycache__
 /config/__pycache__
-/tg_todo_bot/__pycache__
-/tg_todo_bot/migrations/*
-!/tg_todo_bot/migrations/__init__.py
+/todobot/__pycache__
+/todobot/migrations/*
+!/todobot/migrations/__init__.py
 /db.sqlite3
 /static/*
 /media/*

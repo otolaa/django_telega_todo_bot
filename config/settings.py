@@ -6,7 +6,15 @@ https://docs.djangoproject.com/en/4.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/4.2/ref/settings/
 """
+import os
+from environs import Env
 from pathlib import Path
+
+env = Env()
+if not os.path.exists('.env'):
+    print('.env files is not set')
+    quit()
+env.read_env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -29,7 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
 
-    "tg_todo_bot.apps.TgTodoBotConfig",
+    "todobot.apps.TodobotConfig",
 ]
 
 MIDDLEWARE = [
@@ -111,6 +119,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# format data d.m.Y H:i
-from django.conf.locale.ru import formats as enformats
-enformats.DATETIME_FORMAT = "d.m.Y H:i"
+# @YouNameBot
+BOT_TOKEN = env.str('BOT_TOKEN')
+# ADMIN_CHAT_ID - chat_id you users or you group telegram
+ADMIN_CHAT_ID = env.int('ADMIN_CHAT_ID')  
