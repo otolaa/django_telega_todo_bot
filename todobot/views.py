@@ -22,16 +22,21 @@ logging.basicConfig(
 logger = logging.getLogger(__name__)
 
 def main_view(request):
-    response = JsonResponse({'ok':True, 'result':True, 'method':request.method, 'v':version_relise})
+    response = JsonResponse({
+        'ok':True, 'result':True, 
+        'method':request.method, 'v':version_relise,
+    })
     response["Access-Control-Allow-Origin"] = "*"
     response["Access-Control-Allow-Methods"] = "POST, OPTIONS"
-    # response["Access-Control-Max-Age"] = "1000"
     response["Access-Control-Allow-Headers"] = "X-Requested-With, Content-Type"
 
-    return response
+    return response  
 
 def get_name(message):
-    name = f'{message.from_user.first_name}' if message.from_user.last_name is None else f'{message.from_user.first_name} {message.from_user.last_name}'
+    name = f'{message.from_user.first_name}'
+    if message.from_user.last_name is not None: 
+        name = f'{message.from_user.first_name} {message.from_user.last_name}'
+    
     return name
 
 @require_POST
@@ -60,12 +65,17 @@ def start(message: telebot.types.Message):
                                       f'Это ТоДо-Бот, для списка дел!?\n'
                                       f'Чтобы узнать больше команд, напишите /help')
 
-@bot.message_handler(commands=['getchatid'])
+@bot.message_handler(commands=['getinfo'])
 def getchatid(message: telebot.types.Message):
-    cid = message.chat.id
-    mid = message.message_id
-    fid = message.from_user.id    
-    bot.send_message(message.chat.id, '\n'.join([f'cid: {cid}', f'mid: {mid}', f'fid: {fid}']))
+    mess = [
+        f'cid: {message.chat.id}',
+        f'mid: {message.message_id}',
+        f'uid: {message.from_user.id}',
+        f'name: {message.from_user.first_name}',
+        f'ver: {version_relise}'
+    ]
+
+    bot.send_message(message.chat.id, '\n'.join(mess))
 
 @bot.message_handler(content_types=["text"])
 def echo_messages(message: telebot.types.Message):
