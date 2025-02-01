@@ -119,6 +119,9 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+from django.conf.locale.ru import formats as enformats
+enformats.DATETIME_FORMAT = "d.m.Y H:i"
+
 # @YouNameBot
 BOT_TOKEN = env.str('BOT_TOKEN')
 # ADMIN_CHAT_ID - chat_id you users or you group telegram
