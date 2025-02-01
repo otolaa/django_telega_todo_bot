@@ -56,3 +56,13 @@ class GreatTodo():
         res = Tod.id
         
         return res
+
+def add_teg(text_str, tegs = [], plus = '') -> str:
+    if len(tegs) == 0:
+        return text_str
+    
+    pre_teg = ''.join(['<'+str(p)+'>' for p in tegs])
+    tegs.reverse()
+    suf_teg = ''.join(['</'+str(s)+'>' for s in tegs])
+    
+    return pre_teg + str(text_str) + suf_teg + plus
