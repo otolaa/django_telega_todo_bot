@@ -47,24 +47,30 @@ class GreatTodo():
 
         return res
 
-    def dell(self, id: int)->None:
-        Todo.objects.filter(id=id).delete()
-
-    def update(self, id: int, s: str) -> int | bool:
-        res = False        
-        Tod = Todo.objects.filter(id=id).first()
+    def dell(self, id: int)->bool:
+        """ dell """
+        Tod = Todo.objects.filter(id=id, uid=self.uid.id).first()
         if Tod is None:
             self.error.append(f'Такой задачи - №{id} нету!')
-            return res
+            return False
+        
+        Tod.delete()
+        return True
+
+    def update(self, id: int, s: str) -> int | bool:
+        """ up """
+        Tod = Todo.objects.filter(id=id, uid=self.uid.id).first()
+        if Tod is None:
+            self.error.append(f'Такой задачи - №{id} нету!')
+            return False
 
         if self.validate_title(s=s) is False:
-            return res
+            return False
 
         Tod.title = s
-        Tod.save(update_fields=["title"])
-        res = Tod.id
+        Tod.save(update_fields=["title"])        
         
-        return res
+        return Tod.id
 
 def add_teg(text_str, tegs = [], plus = '') -> str:
     if len(tegs) == 0:

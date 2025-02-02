@@ -194,5 +194,8 @@ def echo_message(message):
     
     if message.reply_to_message.text == ru_tuple[4]: # 4 - dell
         Gt = GreatTodo(uid=message.from_user.id, username=message.from_user.username)
-        Gt.dell(id=int(message.text.strip()))
-        bot.send_message(message.chat.id, ru_tuple[5])
+        is_bool = Gt.dell(id=int(message.text.strip()))
+        if is_bool is False:
+            bot.send_message(message.chat.id, ' ~ '.join(Gt.error))
+        else:
+            bot.send_message(message.chat.id, ru_tuple[5])
