@@ -91,6 +91,9 @@ def help(message: telebot.types.Message):
         separator,  
         f'Статус завершено ✅',
         f'Статус в работе ⛔',
+        separator,
+        f'Описание должно быть',
+        f'больше 10 и меньше 369',
     ]
 
     bot.send_message(message.chat.id, '\n'.join(mess))
