@@ -5,7 +5,7 @@ from django.views.decorators.http import require_POST, require_GET
 import telebot
 import logging
 import json, sys, os, time
-from .great import GreatTodo, add_teg
+from .great import GreatTodo, add_teg, ru_tuple
 from config.settings import BOT_TOKEN, ADMIN_CHAT_ID, STATIC_DIR
 
 from .models import *
@@ -71,8 +71,9 @@ def start(message: telebot.types.Message):
         separator,
         f'Это ТоДо-Бот, для списка дел',
         separator,
-        f'Добавить - /add Ваше дело!',
+        f'Добавить дело - /add',
         f'Получить список - /list',
+        f'Удалить дело - /dell',
         separator,
         f'Узнать больше - /help',
     ]
@@ -85,24 +86,9 @@ def help(message: telebot.types.Message):
         # f'/getinfo - информация',
         f'/list - список дел',
         f'/add - добавляет дело', 
+        f'/dell - удалить дело', 
         f'/help - справочник',       
     ]
-    bot.send_message(message.chat.id, '\n'.join(mess))
-
-@bot.message_handler(commands=['add'])
-def add_todo(message: telebot.types.Message):
-    """ add """
-    mess = []
-    s = message.text.replace('/add', '', 1)
-    s = s.strip()
-
-    Gt = GreatTodo(uid=message.from_user.id, username=message.from_user.username)
-    id_or_bool = Gt.add(s=s)
-    if id_or_bool is False:
-        mess.append(' ~ '.join(Gt.error))
-    else:
-        mess.append(f'Успешно добавлено - №{id_or_bool}')
-
     bot.send_message(message.chat.id, '\n'.join(mess))
 
 @bot.message_handler(commands=['getinfo'])
@@ -128,7 +114,8 @@ def list_items(message: telebot.types.Message, page:int = 1, update_message:bool
     if len(list_todo) == 0:
         bot.send_message(message.chat.id, f'дел нету, добавте /add')
 
-    pg = Paginator(list_todo, 1)
+    items_count_page = 5
+    pg = Paginator(list_todo, items_count_page)
     page_item = pg.page(page)
 
     for item in page_item.object_list:
@@ -139,21 +126,23 @@ def list_items(message: telebot.types.Message, page:int = 1, update_message:bool
             f'{item.title}',
         ]
 
-        mess.append('\n'.join(res))
+        mess.append('\n'.join(res)+'\n')
 
-    types = telebot.types
-    buttons = types.InlineKeyboardMarkup()
+    # ~~~~~~~ add~button
+    buttons = telebot.types.InlineKeyboardMarkup()
 
-    left  = page-1 if page != 1 else pg.num_pages
-    right = page+1 if page != pg.num_pages else 1
+    if pg.count > items_count_page:
+        left  = page-1 if page != 1 else pg.num_pages
+        right = page+1 if page != pg.num_pages else 1
 
-    left_button  = types.InlineKeyboardButton("←", callback_data=f'to_{left}_{uid}')
-    page_button  = types.InlineKeyboardButton(f"{str(page)}/{str(pg.num_pages)}", callback_data='_') 
-    right_button = types.InlineKeyboardButton("→", callback_data=f'to_{right}_{uid}')
-    buttons.add(left_button, page_button, right_button)
+        left_button  = telebot.types.InlineKeyboardButton("←", callback_data=f'to_{left}_{uid}')
+        page_button  = telebot.types.InlineKeyboardButton(f"{str(page)}/{str(pg.num_pages)}", callback_data='_') 
+        right_button = telebot.types.InlineKeyboardButton("→", callback_data=f'to_{right}_{uid}')
+        buttons.add(left_button, page_button, right_button)
 
-    buy_button   = types.InlineKeyboardButton("❌", callback_data=f'dell_{uid}')
+    buy_button   = telebot.types.InlineKeyboardButton("❌", callback_data=f'dell_{uid}')
     buttons.add(buy_button)
+    # ~~~~~~~ end add~button
 
     if update_message is False:
         bot.send_message(message.chat.id, '\n'.join(mess), disable_web_page_preview=True, reply_markup=buttons)
@@ -164,8 +153,46 @@ def list_items(message: telebot.types.Message, page:int = 1, update_message:bool
 def callback(c):
     """ handler callback """
     f = str(c.data)
-    if f.find('to_') >= 0:
-        list_param = f.split("_")
+    list_param = f.split("_")
+
+    if f.find('to_') >= 0:        
         page = int(list_param[1])
         c.message.from_user.id = list_param[2] # update uid
         list_items(message=c.message, page=page, update_message=True)
+    
+    if f.find('dell_') >= 0:
+        dell_todo(c.message)
+
+@bot.message_handler(commands=['dell'])
+def dell_todo(message: telebot.types.Message):
+    """ dell """
+    logger.info('dell')
+    markup = telebot.types.ForceReply(selective=False)
+    bot.send_message(message.chat.id, ru_tuple[4], reply_markup=markup)
+
+@bot.message_handler(commands=['add'])
+def add_todo(message: telebot.types.Message):
+    """ add """
+    markup = telebot.types.ForceReply(selective=False)
+    bot.send_message(message.chat.id, ru_tuple[2], reply_markup=markup)
+
+@bot.message_handler(content_types=['text'])
+def echo_message(message):
+    if message.reply_to_message is None:
+        return
+    
+    if message.reply_to_message.text == ru_tuple[2]: # 2 - add
+        mess = []
+        Gt = GreatTodo(uid=message.from_user.id, username=message.from_user.username)
+        id_or_bool = Gt.add(s=message.text.strip())
+        if id_or_bool is False:
+            mess.append(' ~ '.join(Gt.error))
+        else:
+            mess.append(f'{ru_tuple[1]}{id_or_bool}')
+
+        bot.send_message(message.chat.id, '\n'.join(mess))
+    
+    if message.reply_to_message.text == ru_tuple[4]: # 4 - dell
+        Gt = GreatTodo(uid=message.from_user.id, username=message.from_user.username)
+        Gt.dell(id=int(message.text.strip()))
+        bot.send_message(message.chat.id, ru_tuple[5])

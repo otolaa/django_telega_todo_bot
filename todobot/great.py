@@ -1,5 +1,14 @@
 from .models import Uid, Todo
 
+ru_tuple = (
+    'Дел нету, добавте /add',
+    'Дело успешно добавлено - №',
+    'Введите не менее 10 и не более 369 знаков ↓',
+    'Описание должно быть больше 10 и меньше 369 символов!',
+    'Для удаления введите номер дела ↓',
+    'Дело успешно удалено',
+)
+
 class GreatTodo():
     """ great for todo """
     def __init__(self, uid: int, username: str):
@@ -18,7 +27,7 @@ class GreatTodo():
     def validate_title(self, s: str) -> bool:
         """ validate str title """
         if 10 > len(s) or len(s) > 369:
-            self.error.append(f'Описание должно быть больше 10 и меньше 369 символов!')
+            self.error.append(ru_tuple[3])
             return False
         
         return True
