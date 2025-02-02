@@ -7,6 +7,12 @@ ru_tuple = (
     'Описание должно быть больше 10 и меньше 369 символов!',
     'Для удаления введите номер дела ↓',
     'Дело успешно удалено',
+    'Такой задачи нету - №',
+    'Такая задача уже есть - №',
+    'Для завершения введите номер ↓',
+    'Статус завершено ✅',
+    'Для активации введите номер ↓',
+    'Статус в работе ⛔',
 )
 
 class GreatTodo():
@@ -39,7 +45,7 @@ class GreatTodo():
         
         Tod = Todo.objects.filter(uid=self.uid.id, title=s).first()
         if Tod is not None:
-            self.error.append(f'Такая задача №{Tod.id} уже есть!')
+            self.error.append(ru_tuple[7] + str(Tod.id))
             return res
 
         Tod = Todo.objects.create(uid=self.uid, title=s)
@@ -51,7 +57,7 @@ class GreatTodo():
         """ dell """
         Tod = Todo.objects.filter(id=id, uid=self.uid.id).first()
         if Tod is None:
-            self.error.append(f'Такой задачи - №{id} нету!')
+            self.error.append(ru_tuple[6] + str(id))
             return False
         
         Tod.delete()
@@ -61,7 +67,7 @@ class GreatTodo():
         """ up """
         Tod = Todo.objects.filter(id=id, uid=self.uid.id).first()
         if Tod is None:
-            self.error.append(f'Такой задачи - №{id} нету!')
+            self.error.append(ru_tuple[6] + str(id))
             return False
 
         if self.validate_title(s=s) is False:
@@ -69,6 +75,18 @@ class GreatTodo():
 
         Tod.title = s
         Tod.save(update_fields=["title"])        
+        
+        return Tod.id
+    
+    def update_status(self, id: int, s: bool) -> int | bool:
+        """ up """
+        Tod = Todo.objects.filter(id=id, uid=self.uid.id).first()
+        if Tod is None:
+            self.error.append(ru_tuple[6] + str(id))
+            return False
+
+        Tod.is_active = s
+        Tod.save(update_fields=["is_active"])    
         
         return Tod.id
 
@@ -81,3 +99,10 @@ def add_teg(text_str, tegs = [], plus = '') -> str:
     suf_teg = ''.join(['</'+str(s)+'>' for s in tegs])
     
     return pre_teg + str(text_str) + suf_teg + plus
+
+def get_name(message):
+    name = f'{message.from_user.first_name}'
+    if message.from_user.last_name is not None: 
+        name = f'{message.from_user.first_name} {message.from_user.last_name}'
+    
+    return name
