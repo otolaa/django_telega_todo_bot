@@ -54,6 +54,12 @@ def api_bots(request: HttpRequest, token):
 
     return main_view(request)
 
+def markup_inline():
+    markup_inline_button = telebot.types.ReplyKeyboardMarkup(row_width=2, resize_keyboard=True, one_time_keyboard=False)
+    item_1 = telebot.types.KeyboardButton(text='/add - Добавить дело')
+    item_2 = telebot.types.KeyboardButton(text='/list - Список дел')
+    return markup_inline_button.add(item_1, item_2)
+
 @bot.message_handler(commands=['start'])
 def start(message: telebot.types.Message):
     """ start ~ bot """
@@ -71,7 +77,7 @@ def start(message: telebot.types.Message):
         f'Узнать больше - /help',
     ]
 
-    bot.send_message(message.chat.id, '\n'.join(mess))
+    bot.send_message(message.chat.id, '\n'.join(mess), reply_markup=markup_inline())
 
 @bot.message_handler(commands=['help'])
 def help(message: telebot.types.Message):    
